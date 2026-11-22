@@ -38,15 +38,13 @@ Enter each name once, using the same capitalization as in-game. The collector pr
 
 Separate names with commas and click **Commit changes** when you're done. If you configured an earlier version in `sync_armory.py`, copy your region and display names into `armory-config.json`.
 
-### 4. Run the first sync
+### 4. Check the first sync
 
-Open:
+After you enable Actions, committing changes to `armory-config.json` on `main` starts a sync automatically.
 
-**Actions → Sync WoW Forever Armory**
+Open **Actions → Sync WoW Forever Armory** and select the latest run. Its **Summary** shows each character’s result, the Armory URL it tried, and any unavailable pages. Successful snapshots appear in the `characters/` directory.
 
-Click **Run workflow**, then run it from your default branch.
-
-After the workflow finishes, your character data will appear in the `characters/` directory.
+To sync manually, click **Run workflow** and select your default branch.
 
 ### 5. Automatic updates
 

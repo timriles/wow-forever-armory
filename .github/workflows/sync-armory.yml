@@ -1,6 +1,11 @@
 name: Sync WoW Forever Armory
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - armory-config.json
   schedule:
     - cron: '7,37 * * * *'
   workflow_dispatch:
@@ -18,6 +23,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref }}
 
       - name: Fetch characters from Blizzard Armory
         run: python3 sync_armory.py

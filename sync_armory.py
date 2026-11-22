@@ -3,6 +3,7 @@
 import datetime
 import html
 import json
+import os
 from pathlib import Path
 import re
 import unicodedata
@@ -223,7 +224,7 @@ def sync_character(name, slug, region):
 
     if not success:
         print(f"{name}: previous successful snapshot retained")
-        return
+        return armory, "Failed", errors
 
     snapshot = {
         "character": name,
@@ -248,26 +249,54 @@ def sync_character(name, slug, region):
 
     if unchanged:
         print(f"{name}: character data unchanged; previous snapshot retained")
-        return
+    else:
+        output.write_text(
+            json.dumps(snapshot, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        print(f"{name}: saved {output.relative_to(ROOT)}")
 
-    output.write_text(
-        json.dumps(snapshot, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-    print(f"{name}: saved {output.relative_to(ROOT)}")
+    outcome = "Updated"
+    if errors:
+        outcome = "Partial sync"
+    elif unchanged:
+        outcome = "No changes"
+
+    return armory, outcome, errors
+
+
+def write_summary(lines):
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary_path:
+        with Path(summary_path).open("a", encoding="utf-8") as summary:
+            summary.write("## WoW Forever Armory sync\n\n")
+            summary.write("\n".join(lines) + "\n\n")
 
 
 def main():
     try:
         region, characters = load_config(CONFIG_PATH)
     except (OSError, ValueError) as error:
+        write_summary(["Configuration error. See the sync step log for details."])
         raise SystemExit(f"{CONFIG_PATH.name}: {error}") from None
 
     if not characters:
-        print(f"No characters configured. Add names to {CONFIG_PATH.name} to start syncing.")
+        message = f"No characters configured. Add names to {CONFIG_PATH.name} to start syncing."
+        print(message)
+        write_summary([message])
+        return
 
+    rows = [
+        "| Character | Result | Armory URL | Unavailable pages |",
+        "| --- | --- | --- | --- |",
+    ]
     for name, slug in characters:
-        sync_character(name, slug, region)
+        armory_url, outcome, errors = sync_character(name, slug, region)
+        unavailable = ", ".join(f"`{page}`" for page in errors) or "None"
+        display_name = " ".join(name.split())
+        rows.append(f"| {display_name} | {outcome} | <{armory_url}> | {unavailable} |")
+
+    write_summary(rows)
 
 
 if __name__ == "__main__":
