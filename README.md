@@ -22,7 +22,7 @@ GitHub may show a message that workflows are disabled in forked repositories. If
 
 Open [armory-config.json](armory-config.json) in your fork and click the **pencil icon** to edit it in GitHub.
 
-Set `region` to your Armory region and replace the `Your Character Name` placeholder in `characters` with your full display name. To track more characters, add their names to the list:
+Set `region` to your Armory region and replace the `Firstname Lastname` placeholder in `characters` with your full display name. To track more characters, add their names to the list:
 
 ```json
 {
@@ -36,7 +36,7 @@ Set `region` to your Armory region and replace the `Your Character Name` placeho
 
 Enter each name once, using the same capitalization as in-game. The collector preserves the display name and generates the Armory slug automatically. For example, `Firstname Lastname` becomes `firstname-lastname`.
 
-Separate names with commas and click **Commit changes** when you're done. If you configured an earlier version in `sync_armory.py`, copy your region and display names into `armory-config.json`.
+Separate names with commas and click **Commit changes** when you're done.
 
 ### 4. Check the first sync
 
