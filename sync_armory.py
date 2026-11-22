@@ -5,26 +5,21 @@ import html
 import json
 from pathlib import Path
 import re
+import unicodedata
 import urllib.error
 import urllib.request
-
-# Supported regions:
-#   us - Americas & Oceania
-#   eu - Europe
-#   kr - Korea
-#   tw - Taiwan
-# China (cn) is not supported.
-REGION = "us"
-
-# Add your WoW Forever characters here.
-# name: Character display name, e.g. "Firstname Lastname"
-# slug: Final part of the Armory URL, e.g. "firstname-lastname"
-CHARACTERS = [
-    {"name": "Firstname Lastname", "slug": "firstname-lastname"},
-]
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parent
+CONFIG_PATH = ROOT / "armory-config.json"
 USER_AGENT = "Mozilla/5.0 (compatible; wow-forever-armory/1.0)"
+
+LOCALES = {
+    "us": "en-us",
+    "eu": "en-gb",
+    "kr": "ko-kr",
+    "tw": "zh-tw",
+}
 
 TABS = {
     "reputation": "/reputation",
@@ -66,25 +61,46 @@ def extract_armory_profile(page):
     return None
 
 
-def sync_character(character):
-    name, slug = (character[key] for key in ("name", "slug"))
-    region = REGION.lower()
+def load_config(path):
+    config = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(config, dict):
+        raise ValueError("Expected a JSON object with region and characters fields")
 
-    if region not in ("us", "eu", "kr", "tw"):
-        raise ValueError(f"Unsupported region: {region}")
-    if not re.fullmatch(r"[a-z0-9-]+", slug):
-        raise ValueError(f"Invalid character slug: {slug}")
+    region = config.get("region")
+    region = region.strip().lower() if isinstance(region, str) else ""
+    if region not in LOCALES:
+        raise ValueError(f"Set region to one of: {', '.join(LOCALES)}")
 
-    locale = {
-        "us": "en-us",
-        "eu": "en-gb",
-        "kr": "ko-kr",
-        "tw": "zh-tw",
-    }[region]
+    names = config.get("characters")
+    if not isinstance(names, list):
+        raise ValueError("Set characters to a list of display names")
 
+    characters = []
+    output_files = set()
+    for index, name in enumerate(names, start=1):
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError(f"Character #{index} must be a non-empty display name")
+
+        name = name.strip()
+        slug = "-".join(unicodedata.normalize("NFC", name.lower()).split())
+        if not all(part.isalnum() for part in slug.split("-")):
+            raise ValueError(
+                f"Character #{index} must use letters, numbers, spaces, or hyphens between words"
+            )
+
+        files = {f"{slug}.json", f"{slug}-status.json"}
+        if output_files & files:
+            raise ValueError(f"Character #{index} would reuse an output filename: {name}")
+        output_files.update(files)
+        characters.append((name, slug))
+
+    return region, characters
+
+
+def sync_character(name, slug, region):
     armory = (
         f"https://worldofwarcraft.blizzard.com/"
-        f"{locale}/forever/{region}/armory/character/{slug}"
+        f"{LOCALES[region]}/forever/{region}/armory/character/{quote(slug, safe='')}"
     )
 
     output = ROOT / f"characters/{slug}.json"
@@ -239,11 +255,16 @@ def sync_character(character):
 
 
 def main():
-    if not CHARACTERS:
-        raise ValueError("CHARACTERS must not be empty")
+    try:
+        region, characters = load_config(CONFIG_PATH)
+    except (OSError, ValueError) as error:
+        raise SystemExit(f"{CONFIG_PATH.name}: {error}") from None
 
-    for character in CHARACTERS:
-        sync_character(character)
+    if not characters:
+        print(f"No characters configured. Add names to {CONFIG_PATH.name} to start syncing.")
+
+    for name, slug in characters:
+        sync_character(name, slug, region)
 
 
 if __name__ == "__main__":

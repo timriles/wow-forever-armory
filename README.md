@@ -18,44 +18,25 @@ Open the **Actions** tab in your fork.
 
 GitHub may show a message that workflows are disabled in forked repositories. If it does, click **I understand my workflows, go ahead and enable them**.
 
-### 3. Add your character
+### 3. Add your region and characters
 
-Open **sync_armory.py** in your fork and click the **pencil icon** to edit the file directly in GitHub.
+Open [armory-config.json](armory-config.json) in your fork and click the **pencil icon** to edit it in GitHub.
 
-Near the top of the file, set your region and replace the placeholder character:
+Set `region` to your Armory region, then add each character's full display name to `characters`:
 
-```python
-REGION = "us"
-
-CHARACTERS = [
-    {"name": "Firstname Lastname", "slug": "firstname-lastname"},
-]
+```json
+{
+  "region": "us",
+  "characters": [
+    "Firstname Lastname",
+    "Anothername Lastname"
+  ]
+}
 ```
 
-Use the character's normal display name for `name`.
+Enter each name once, using the same capitalization as in-game. The collector preserves the display name and generates the Armory slug automatically. For example, `Firstname Lastname` becomes `firstname-lastname`.
 
-Use the final part of the Blizzard Armory URL for `slug`. For example:
-
-```text
-https://worldofwarcraft.blizzard.com/en-us/forever/us/armory/character/firstname-lastname
-```
-
-The slug is:
-
-```text
-firstname-lastname
-```
-
-To track multiple characters, add more entries:
-
-```python
-CHARACTERS = [
-    {"name": "Firstname Lastname", "slug": "firstname-lastname"},
-    {"name": "Anothername Lastname", "slug": "anothername-lastname"},
-]
-```
-
-When finished, click **Commit changes**.
+Separate names with commas and click **Commit changes** when you're done. If you configured an earlier version in `sync_armory.py`, copy your region and display names into `armory-config.json`.
 
 ### 4. Run the first sync
 
@@ -86,7 +67,7 @@ GitHub may occasionally delay scheduled workflows.
 
 China (`cn`) is not supported.
 
-All characters in one fork currently use the same configured `REGION`.
+All characters in a fork use the same `region` from `armory-config.json`.
 
 ## What gets collected
 
@@ -159,7 +140,7 @@ Blizzard controls the underlying Armory page format, so the collector may need u
 
 ## Running locally
 
-Local use is optional. The GitHub workflow is enough for normal use.
+Local use is optional. The GitHub workflow is enough for normal use. The script reads `armory-config.json` from the same directory as `sync_armory.py`.
 
 If you want to run the collector manually:
 
@@ -177,6 +158,7 @@ wow-forever-armory/
 │   └── workflows/
 │       └── sync-armory.yml
 ├── characters/
+├── armory-config.json
 ├── README.md
 └── sync_armory.py
 ```
