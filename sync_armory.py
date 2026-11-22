@@ -82,6 +82,9 @@ def load_config(path):
             raise ValueError(f"Character #{index} must be a non-empty display name")
 
         name = name.strip()
+        if name == "Your Character Name":
+            continue
+
         slug = "-".join(unicodedata.normalize("NFC", name.lower()).split())
         if not all(part.isalnum() for part in slug.split("-")):
             raise ValueError(

@@ -22,7 +22,7 @@ GitHub may show a message that workflows are disabled in forked repositories. If
 
 Open [armory-config.json](armory-config.json) in your fork and click the **pencil icon** to edit it in GitHub.
 
-Set `region` to your Armory region, then add each character's full display name to `characters`:
+Set `region` to your Armory region and replace the `Your Character Name` placeholder in `characters` with your full display name. To track more characters, add their names to the list:
 
 ```json
 {
