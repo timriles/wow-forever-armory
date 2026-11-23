@@ -48,7 +48,7 @@ To sync manually, click **Run workflow** and select your default branch.
 
 ### 5. Automatic updates
 
-After setup, GitHub Actions checks your configured characters every 30 minutes at **:07** and **:37** past the hour.
+After setup, GitHub Actions checks your configured characters every 30 minutes at **:17** and **:47** past the hour.
 
 The workflow only creates a new commit when character data or sync status actually changes, so unchanged checks do not continuously grow the repository history.
 
